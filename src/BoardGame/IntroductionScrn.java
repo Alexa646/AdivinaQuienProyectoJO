@@ -77,9 +77,9 @@ public IntroductionScrn() {
         JPaneBackgroundLayout.setVerticalGroup(
             JPaneBackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(JPaneBackgroundLayout.createSequentialGroup()
-                .addGap(56, 56, 56)
+                .addGap(47, 47, 47)
                 .addComponent(jButtonEmpezar, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(120, Short.MAX_VALUE))
+                .addContainerGap(129, Short.MAX_VALUE))
         );
 
         jPanel2.setForeground(new java.awt.Color(255, 255, 255));
@@ -136,7 +136,7 @@ public IntroductionScrn() {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(JPaneBackground, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 1276, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
