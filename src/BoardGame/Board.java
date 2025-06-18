@@ -1,10 +1,10 @@
-
 package BoardGame;
 
 import java.util.Random;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,32 +15,47 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.Timer;
 
 public class Board extends javax.swing.JFrame {
-    
-    ArrayList<String> mylist; 
+
+    private javax.swing.Timer timer;
+    private int segundosTranscurridos = 0;
+
+    private boolean musicaReproduciendo = false;
+    private Clip clip;
+    private long posicionPausa = 0; // Guarda la posición cuando se pausa
+    private final String rutaMusica = "/sounds/cancion.wav";
+
+    ArrayList<String> mylist;
     private static final String BACK_POKER_IMAGE_PATH = "/Images/BackPoker.jpg";
     private JLabel[] labels;
-    
-    public void RNG()
-    {
-        
+
+    public void RNG() {
+
         labels = new JLabel[]{
-        jLabel1,jLabel2,jLabel3,jLabel4,jLabel5,jLabel6,jLabel7,jLabel8,jLabel9,jLabel10,
-        jLabel11, jLabel12,jLabel13,jLabel14,jLabel15,jLabel16,jLabel17,jLabel18,
-        jLabel19,jLabel20,jLabel21,jLabel22,jLabel23,jLabel26,jLabel27
+            jLabel1, jLabel2, jLabel3, jLabel4, jLabel5, jLabel6, jLabel7, jLabel8, jLabel9, jLabel10,
+            jLabel11, jLabel12, jLabel13, jLabel14, jLabel15, jLabel16, jLabel17, jLabel18,
+            jLabel19, jLabel20, jLabel21, jLabel22, jLabel23, jLabel26, jLabel27
         };
 
         // Creating an empty ArrayList of string type 
-        mylist = new ArrayList<String>(); 
-  
+        mylist = new ArrayList<String>();
+
         // Adding custom input elements to list object 
-        mylist.add("1"); 
-        mylist.add("2"); 
-        mylist.add("3"); 
-        mylist.add("4"); 
-        mylist.add("5"); 
-        mylist.add("6"); 
+        mylist.add("1");
+        mylist.add("2");
+        mylist.add("3");
+        mylist.add("4");
+        mylist.add("5");
+        mylist.add("6");
         mylist.add("7");
         mylist.add("8");
         mylist.add("9");
@@ -69,16 +84,14 @@ public class Board extends javax.swing.JFrame {
         mylist.add("32");
         mylist.add("33");
         mylist.add("34");
-        
 
-        System.out.println("Original List : \n" + mylist); 
-  
+        System.out.println("Original List : \n" + mylist);
+
         // Shuffling the list 
-        Collections.shuffle(mylist); 
-  
-   
-        System.out.println("\nShuffled List : \n" + mylist); 
-        Random r= new Random();
+        Collections.shuffle(mylist);
+
+        System.out.println("\nShuffled List : \n" + mylist);
+        Random r = new Random();
         int r1 = r.nextInt(24);
         for (int i = 0; i < 24; i++) {
             System.out.println("Valor de i: " + i);
@@ -88,7 +101,7 @@ public class Board extends javax.swing.JFrame {
             Image image = originalIcon.getImage();
             Image scaledImage = image.getScaledInstance(labels[i].getWidth(), labels[i].getHeight(), Image.SCALE_SMOOTH);
             labels[i].setIcon(new ImageIcon(scaledImage));
-            labels[i].setName(imageIdentifier); 
+            labels[i].setName(imageIdentifier);
             /* no lo descomente esto es solo para activar aleatorio de pruba al presionar iniciar
             if(r1==i)
             {
@@ -97,20 +110,19 @@ public class Board extends javax.swing.JFrame {
                 scaledImage = image.getScaledInstance(labels[24].getWidth(), labels[24].getHeight(), Image.SCALE_SMOOTH);
                 labels[24].setIcon(new ImageIcon(scaledImage));
             }
-            */
+             */
         }
-        
+
     }
-    
-    public void RNGchus()
-    {
+
+    public void RNGchus() {
         labels = new JLabel[]{
-        jLabel1,jLabel2,jLabel3,jLabel4,jLabel5,jLabel6,jLabel7,jLabel8,jLabel9,jLabel10,
-        jLabel11, jLabel12,jLabel13,jLabel14,jLabel15,jLabel16,jLabel17,jLabel18,
-        jLabel19,jLabel20,jLabel21,jLabel22,jLabel23,jLabel26,jLabel27
+            jLabel1, jLabel2, jLabel3, jLabel4, jLabel5, jLabel6, jLabel7, jLabel8, jLabel9, jLabel10,
+            jLabel11, jLabel12, jLabel13, jLabel14, jLabel15, jLabel16, jLabel17, jLabel18,
+            jLabel19, jLabel20, jLabel21, jLabel22, jLabel23, jLabel26, jLabel27
         };
-        
-        Random r= new Random();
+
+        Random r = new Random();
         int r1 = r.nextInt(24);
         for (int i = 0; i < 24; i++) {
             System.out.println("Valor de i: " + i);
@@ -119,12 +131,21 @@ public class Board extends javax.swing.JFrame {
             ImageIcon originalIcon = new ImageIcon(getClass().getResource(imagePath));
             Image image = originalIcon.getImage();
             Image scaledImage = image.getScaledInstance(labels[i].getWidth(), labels[i].getHeight(), Image.SCALE_SMOOTH);
-            if(r1==i)
-            {
+            if (r1 == i) {
                 originalIcon = new ImageIcon(getClass().getResource(imagePath));
                 image = originalIcon.getImage();
                 scaledImage = image.getScaledInstance(labels[24].getWidth(), labels[24].getHeight(), Image.SCALE_SMOOTH);
                 labels[24].setIcon(new ImageIcon(scaledImage));
+
+                // Actualizar imagen en el panel superior
+                ImageIcon personajeIcon = new ImageIcon(getClass().getResource(imagePath));
+                Image personajeImg = personajeIcon.getImage();
+                Image scaledPersonaje = personajeImg.getScaledInstance(
+                        lblPersonajeJugador.getWidth(),
+                        lblPersonajeJugador.getHeight(),
+                        Image.SCALE_SMOOTH
+                );
+                lblPersonajeJugador.setIcon(new ImageIcon(scaledPersonaje));
             }
         }
     }
@@ -149,8 +170,17 @@ public class Board extends javax.swing.JFrame {
             }
         }
         setDefaultImages();
+
+        //elementos
+        actualizarFecah();
+        iniciarTemporizador();
+        //lblNombreJugadorsetText("Jugador: " + nombreJugador);
+
+        //btnMusica.addActionListener(e -> Musica());
+        cargarMusica();
+
     }
-    
+
     private void setDefaultImages() {
         // Array of all JLabels you want to set the image for
         labels = new JLabel[]{
@@ -169,16 +199,126 @@ public class Board extends javax.swing.JFrame {
             image = originalIcon.getImage();
         } catch (NullPointerException e) {
             System.err.println("Error: default_image.png not found at " + defaultImagePath);
-            
-            return; 
+
+            return;
         }
 
         for (JLabel label : labels) {
-            if (label != null) { 
-                
+            if (label != null) {
+
                 scaledImage = image.getScaledInstance(label.getWidth(), label.getHeight(), Image.SCALE_SMOOTH);
                 label.setIcon(new ImageIcon(scaledImage));
             }
+        }
+    }
+
+    //fecha
+    private void actualizarFecah() {
+        LocalDate fechaActual = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        lblfecha.setText(fechaActual.format(formatter));
+    }
+
+    //temporizador para duracion
+    private void iniciarTemporizador() {
+        timer = new Timer(1000, e -> {
+            segundosTranscurridos++;
+            int minutos = segundosTranscurridos / 60;
+            int segundos = segundosTranscurridos % 60;
+            lbltemporizador.setText(String.format("%02d:%02d", minutos, segundos));
+        });
+
+        timer.start();
+    }
+
+    //Metodo cargar Musica
+    private void cargarMusica() {
+        if (clip != null) {
+            
+            return;
+        }
+
+        try {
+            
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
+                    getClass().getResource(rutaMusica));
+            clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+
+            // Iniciar la música automáticamente
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+            musicaReproduciendo = true;
+            btnMusica.setIcon(new ImageIcon(getClass().getResource("/images/sonido.png")));
+
+            
+            System.out.println("DEBUG: musicaReproduciendo = " + musicaReproduciendo);
+
+        } catch (Exception e) {
+            System.err.println("ERROR al cargar música: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // Método para controlar la música
+    private void Musica() {
+        System.out.println("DEBUG: Método Musica() llamado");
+        System.out.println("DEBUG: Estado actual musicaReproduciendo = " + musicaReproduciendo);
+        System.out.println("DEBUG: Clip es null? " + (clip == null));
+
+        if (clip != null) {
+            System.out.println("DEBUG: Clip está corriendo? " + clip.isRunning());
+            System.out.println("DEBUG: Posición actual: " + clip.getMicrosecondPosition());
+        }
+
+        try {
+            if (clip == null) {
+                System.out.println("DEBUG: Clip es null, cargando música...");
+                cargarMusica();
+                return; // Salir después de cargar, el usuario tendrá que hacer clic otra vez
+            }
+
+            if (musicaReproduciendo) {
+                System.out.println("DEBUG: Pausando música...");
+                // Pausar
+                if (clip.isRunning()) {
+                    posicionPausa = clip.getMicrosecondPosition();
+                    clip.stop();
+                    System.out.println("DEBUG: Música pausada en posición: " + posicionPausa);
+                }
+                btnMusica.setIcon(new ImageIcon(getClass().getResource("/images/sin-sonido.png")));
+                musicaReproduciendo = false;
+                System.out.println("DEBUG: Estado cambiado a pausado");
+
+            } else {
+                System.out.println("DEBUG: Reanudando música...");
+                // Reanudar
+                if (posicionPausa > 0) {
+                    System.out.println("DEBUG: Reanudando desde posición: " + posicionPausa);
+                    clip.setMicrosecondPosition(posicionPausa);
+                    // Usar loop en lugar de start para continuar el bucle
+                    clip.loop(Clip.LOOP_CONTINUOUSLY);
+                } else {
+                    System.out.println("DEBUG: Iniciando desde el principio con loop");
+                    clip.loop(Clip.LOOP_CONTINUOUSLY);
+                }
+                btnMusica.setIcon(new ImageIcon(getClass().getResource("/images/sonido.png")));
+                musicaReproduciendo = true;
+                System.out.println("DEBUG: Estado cambiado a reproduciendo");
+            }
+
+            System.out.println("DEBUG: Nuevo estado musicaReproduciendo = " + musicaReproduciendo);
+            btnMusica.repaint();
+
+        } catch (Exception e) {
+            System.out.println("ERROR en método Musica(): " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void cerrarRecursos() {
+        if (clip != null) {
+            clip.stop();
+            clip.close();
         }
     }
 
@@ -242,6 +382,13 @@ public class Board extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jListNames = new javax.swing.JList<>();
         jButtonAzar = new javax.swing.JButton();
+        jPanelTop = new javax.swing.JPanel();
+        lblNombreJuego = new javax.swing.JLabel();
+        lblfecha = new javax.swing.JLabel();
+        lblNombreJugador = new javax.swing.JLabel();
+        lbltemporizador = new javax.swing.JLabel();
+        lblPersonajeJugador = new javax.swing.JLabel();
+        btnMusica = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -603,6 +750,72 @@ public class Board extends javax.swing.JFrame {
             }
         });
 
+        lblNombreJuego.setFont(new java.awt.Font("Comic Sans MS", 1, 18)); // NOI18N
+        lblNombreJuego.setForeground(new java.awt.Color(255, 0, 51));
+        lblNombreJuego.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblNombreJuego.setText("Adivina Quien");
+
+        lblfecha.setFont(new java.awt.Font("Comic Sans MS", 1, 18)); // NOI18N
+        lblfecha.setForeground(new java.awt.Color(255, 0, 51));
+        lblfecha.setText("Fecha:");
+
+        lblNombreJugador.setFont(new java.awt.Font("Comic Sans MS", 1, 18)); // NOI18N
+        lblNombreJugador.setForeground(new java.awt.Color(255, 0, 51));
+        lblNombreJugador.setText("Nombre del jugador");
+
+        lbltemporizador.setFont(new java.awt.Font("Yu Gothic", 1, 18)); // NOI18N
+        lbltemporizador.setForeground(new java.awt.Color(255, 0, 51));
+        lbltemporizador.setText("\"00:00\"");
+
+        lblPersonajeJugador.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
+        lblPersonajeJugador.setForeground(new java.awt.Color(255, 0, 51));
+
+        javax.swing.GroupLayout jPanelTopLayout = new javax.swing.GroupLayout(jPanelTop);
+        jPanelTop.setLayout(jPanelTopLayout);
+        jPanelTopLayout.setHorizontalGroup(
+            jPanelTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelTopLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblNombreJugador)
+                .addGap(18, 18, 18)
+                .addComponent(lblPersonajeJugador, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(343, 343, 343)
+                .addComponent(lblNombreJuego, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lbltemporizador)
+                .addGap(69, 69, 69)
+                .addComponent(lblfecha)
+                .addContainerGap())
+        );
+        jPanelTopLayout.setVerticalGroup(
+            jPanelTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelTopLayout.createSequentialGroup()
+                .addGroup(jPanelTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelTopLayout.createSequentialGroup()
+                        .addGap(14, 14, 14)
+                        .addGroup(jPanelTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(lblNombreJuego)
+                            .addComponent(lbltemporizador)
+                            .addComponent(lblfecha)))
+                    .addGroup(jPanelTopLayout.createSequentialGroup()
+                        .addGap(7, 7, 7)
+                        .addComponent(lblPersonajeJugador, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanelTopLayout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addComponent(lblNombreJugador)))
+                .addContainerGap(16, Short.MAX_VALUE))
+        );
+
+        btnMusica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/sonido.png"))); // NOI18N
+        btnMusica.setToolTipText("");
+        btnMusica.setMaximumSize(new java.awt.Dimension(32, 32));
+        btnMusica.setMinimumSize(new java.awt.Dimension(32, 32));
+        btnMusica.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMusicaActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -671,14 +884,20 @@ public class Board extends javax.swing.JFrame {
                                 .addGap(18, 18, 18)
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButtonAzar, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jButtonAzar, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnMusica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(jLabel25))
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanelTop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(15, 15, 15)
+                .addComponent(jPanelTop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -704,7 +923,7 @@ public class Board extends javax.swing.JFrame {
                             .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jPanel19, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jPanel15, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(24, 24, 24)
+                        .addGap(22, 22, 22)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jPanel23, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jPanel22, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -719,8 +938,10 @@ public class Board extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jButtonAzar, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(265, 265, 265)
-                                .addComponent(jLabel24, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(237, 237, 237)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jLabel24, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(btnMusica, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -738,9 +959,9 @@ public class Board extends javax.swing.JFrame {
         RNG();
         LlenarTabla();
     }//GEN-LAST:event_jButton1ActionPerformed
-    
-    public void LlenarTabla(){
-                // Usaremos un ArrayList temporal para recolectar los nombres primero
+
+    public void LlenarTabla() {
+        // Usaremos un ArrayList temporal para recolectar los nombres primero
         List<String> nombresParaMostrar = new ArrayList<>();
 
         List<Personaje> todas = ConexionBD.obtenerTodasLosPersonajes();
@@ -782,57 +1003,56 @@ public class Board extends javax.swing.JFrame {
         for (int i = 0; i < countToAdd; i++) {
             model.addElement(nombresParaMostrar.get(i));
         }
-    
+
     }
-    
+
     public void fliperino(JLabel clickedLabel) {
         String faceUpImageIdentifier = clickedLabel.getName(); // Get the stored face-up image name (e.g., "1", "2")
 
-    if (faceUpImageIdentifier == null || faceUpImageIdentifier.isEmpty()) {
-        System.out.println("JLabel has no assigned face-up image identifier.");
-        return;
-    }
+        if (faceUpImageIdentifier == null || faceUpImageIdentifier.isEmpty()) {
+            System.out.println("JLabel has no assigned face-up image identifier.");
+            return;
+        }
 
-    ImageIcon currentIcon = (ImageIcon) clickedLabel.getIcon();
-    String imageToLoadPath;
+        ImageIcon currentIcon = (ImageIcon) clickedLabel.getIcon();
+        String imageToLoadPath;
 
+        if (currentIcon != null && currentIcon.getDescription() != null
+                && currentIcon.getDescription().endsWith(BACK_POKER_IMAGE_PATH)) {
+            imageToLoadPath = "/Images/" + faceUpImageIdentifier + ".png";
+        } else {
 
-    if (currentIcon != null && currentIcon.getDescription() != null &&
-        currentIcon.getDescription().endsWith(BACK_POKER_IMAGE_PATH)) {
-        imageToLoadPath = "/Images/" + faceUpImageIdentifier + ".png";
-    } else {
-
-        imageToLoadPath = BACK_POKER_IMAGE_PATH;
-    }
+            imageToLoadPath = BACK_POKER_IMAGE_PATH;
+        }
 
         setAndScaleImage(clickedLabel, imageToLoadPath);
     }
-    
+
     private void setAndScaleImage(JLabel label, String imagePath) {
-    if (label == null) {
-        System.err.println("Attempted to set image on a null JLabel.");
-        return;
-    }
-    try {
-        ImageIcon originalIcon = new ImageIcon(getClass().getResource(imagePath));
-        if (originalIcon.getImageLoadStatus() == java.awt.MediaTracker.ERRORED) {
-             System.err.println("Error loading image: " + imagePath + ". Check if file exists and path is correct.");
-             
-             return;
+        if (label == null) {
+            System.err.println("Attempted to set image on a null JLabel.");
+            return;
         }
-        Image image = originalIcon.getImage();
-        Image scaledImage = image.getScaledInstance(label.getWidth(), label.getHeight(), Image.SCALE_SMOOTH);
-        // Store the imagePath as the description for future checks in fliperino
-        label.setIcon(new ImageIcon(scaledImage, imagePath));
-    } catch (NullPointerException e) {
-        // This usually happens if getResource returns null (image not found)
-        System.err.println("Image resource not found: " + imagePath);
-        // You might want to set a default "missing image" icon here
+        try {
+            ImageIcon originalIcon = new ImageIcon(getClass().getResource(imagePath));
+            if (originalIcon.getImageLoadStatus() == java.awt.MediaTracker.ERRORED) {
+                System.err.println("Error loading image: " + imagePath + ". Check if file exists and path is correct.");
+
+                return;
+            }
+            Image image = originalIcon.getImage();
+            Image scaledImage = image.getScaledInstance(label.getWidth(), label.getHeight(), Image.SCALE_SMOOTH);
+            // Store the imagePath as the description for future checks in fliperino
+            label.setIcon(new ImageIcon(scaledImage, imagePath));
+        } catch (NullPointerException e) {
+            // This usually happens if getResource returns null (image not found)
+            System.err.println("Image resource not found: " + imagePath);
+            // You might want to set a default "missing image" icon here
+        }
     }
-}
-    
+
     private void jLabelMouseClicked(java.awt.event.MouseEvent evt) {
-                JLabel clickedLabel = (JLabel) evt.getSource();
+        JLabel clickedLabel = (JLabel) evt.getSource();
         String faceUpImageName = clickedLabel.getName(); // This should be the '1', '2', etc.
 
         if (faceUpImageName != null && !faceUpImageName.isEmpty()) { // Added check for empty string
@@ -844,7 +1064,7 @@ public class Board extends javax.swing.JFrame {
             System.out.println("This label has no assigned 'faceUpImageName' (from setName()).");
         }
     }
-    
+
     private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
         // TODO add your handling code here:
 
@@ -854,6 +1074,12 @@ public class Board extends javax.swing.JFrame {
         // TODO add your handling code here:
         RNGchus();
     }//GEN-LAST:event_jButtonAzarActionPerformed
+
+    private void btnMusicaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMusicaActionPerformed
+        // TODO add your handling code here:
+        System.out.println("DEBUG: Botón clickeado");
+        Musica();
+    }//GEN-LAST:event_btnMusicaActionPerformed
 
     /**
      * @param args the command line arguments
@@ -886,12 +1112,13 @@ public class Board extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new Board().setVisible(true);
-                
+
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnMusica;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButtonAzar;
     private javax.swing.JLabel jLabel1;
@@ -947,6 +1174,12 @@ public class Board extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
+    private javax.swing.JPanel jPanelTop;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblNombreJuego;
+    private javax.swing.JLabel lblNombreJugador;
+    private javax.swing.JLabel lblPersonajeJugador;
+    private javax.swing.JLabel lblfecha;
+    private javax.swing.JLabel lbltemporizador;
     // End of variables declaration//GEN-END:variables
 }
