@@ -1,2 +1,8 @@
-/build/
-/dist/
+# NetBeans project files
+nbproject/private/
+nbproject/project.properties
+nbbuild/
+dist/
+.idea/
+.vscode/
+build/
